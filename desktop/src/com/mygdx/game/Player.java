@@ -2,7 +2,6 @@ package com.mygdx.game;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class Player extends GameObject {
@@ -22,20 +21,21 @@ public class Player extends GameObject {
 
     public void draw(Graphics g) {
         g.setColor(Color.RED);
-        g.fillRect(x, y, 50, 50);
-        Iterator<Bullet> it = bullets.iterator();
-        while (it.hasNext()) {
-            Bullet bullet = it.next();
+        g.fillRect(x, y, width, height);
+        List<Bullet> bulletsToRemove = new ArrayList<>();
+        for (Bullet bullet : bullets) {
             bullet.draw(g);
             if (!bullet.isActive()) {
-                it.remove(); // Use Iterator's remove method
+                bulletsToRemove.add(bullet);
             }
         }
+        bullets.removeAll(bulletsToRemove);
     }
 
     public void attack(int targetX, int targetY) {
         Bullet bullet = new Bullet(x + width / 2, y + height / 2, targetX, targetY);
         bullets.add(bullet);
+        System.out.println("Player Attacking");
     }
 
     public List<Bullet> getBullets() {

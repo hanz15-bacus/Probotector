@@ -3,66 +3,55 @@ package com.mygdx.game;
 import java.awt.*;
 
 public class Bullet extends GameObject {
-    private int speed = 10;
-    private double directionX, directionY;
-    private boolean active = true;
-    private int damage;
+    private int targetX, targetY;
+    private boolean active;
+    private double speed = 10.0;
 
-    public Bullet(int x, int y, int targetX, int targetY) {
-        super(x, y, 10, 10);
-        setDirection(targetX, targetY);
+    public Bullet(int startX, int startY, int targetX, int targetY) {
+        super(startX, startY, 5, 5);
+        this.targetX = targetX;
+        this.targetY = targetY;
+        this.active = true;
+        calculateVelocity();
     }
 
-    private void setDirection(int targetX, int targetY) {
-        double dx = targetX - x;
-        double dy = targetY - y;
-        double length = Math.sqrt(dx * dx + dy * dy);
-        if (length != 0) {
-            directionX = (dx / length) * speed;
-            directionY = (dy / length) * speed;
-        }
+    private double vx, vy;
+
+    private void calculateVelocity() {
+        double angle = Math.atan2(targetY - y, targetX - x);
+        vx = speed * Math.cos(angle);
+        vy = speed * Math.sin(angle);
     }
 
-    @Override
     public void update() {
         if (active) {
-            x += directionX;
-            y += directionY;
-            if (isOffScreen()) {
+            x += vx;
+            y += vy;
+            // Deactivate the bullet if it goes off screen
+            if (x < 0 || x > Game.WIDTH || y < 0 || y > Game.HEIGHT) {
                 active = false;
             }
         }
     }
 
-    @Override
     public void draw(Graphics g) {
         if (active) {
-            g.setColor(Color.BLUE);
-            g.fillOval(x, y, width, height);
+            g.setColor(Color.YELLOW);
+            g.fillRect(x, y, width, height);
         }
-    }
-
-    public boolean isOffScreen() {
-        return x < 0 || x > Game.WIDTH || y < 0 || y > Game.HEIGHT;
-    }
-
-    public boolean intersects(Enemy enemy) {
-        if (!active) {
-            return false;
-        }
-        return x >= enemy.getX() && x <= enemy.getX() + enemy.getWidth() &&
-                y >= enemy.getY() && y <= enemy.getY() + enemy.getHeight();
     }
 
     public void setInactive() {
         active = false;
     }
-    public int getDamage() {
-        return damage;
+
+    public boolean isActive() {
+        return active;
     }
 
-    public void setDamage(int damage) {
-        this.damage = damage;
+    public boolean intersects(GameObject other) {
+        Rectangle bulletRect = new Rectangle(x, y, width, height);
+        Rectangle otherRect = new Rectangle(other.getX(), other.getY(), other.getWidth(), other.getHeight());
+        return bulletRect.intersects(otherRect);
     }
-
 }

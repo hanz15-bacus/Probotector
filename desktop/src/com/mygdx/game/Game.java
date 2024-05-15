@@ -5,7 +5,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -83,7 +82,9 @@ public class Game {
 
     private void drawEnemyHP(Graphics g, Enemy enemy) {
         g.setColor(Color.BLACK);
+
         g.drawString("Enemy HP: " + enemy.getHP(), enemy.getX(), enemy.getY() - 10);
+        System.out.println("HP: %d" +enemy.getHP());
     }
 
     public Player getPlayer() {
@@ -113,24 +114,17 @@ public class Game {
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                mousePressed = true;
-                mouseX = e.getX();
-                mouseY = e.getY();
+                if (!mousePressed) {
+                    mousePressed = true;
+                    mouseX = e.getX();
+                    mouseY = e.getY();
+                    player.attack(mouseX, mouseY); // Fire a bullet when mouse is pressed
+                }
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
                 mousePressed = false;
-            }
-        });
-
-        canvas.addMouseMotionListener(new MouseMotionAdapter() {
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                if (mousePressed) {
-                    mouseX = e.getX();
-                    mouseY = e.getY();
-                }
             }
         });
 
@@ -143,9 +137,6 @@ public class Game {
             lastTime = now;
             while (delta >= 1) {
                 update();
-                if (mousePressed) {
-                    player.attack(mouseX, mouseY);
-                }
                 delta--;
             }
             if (bs != null) {
