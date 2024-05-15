@@ -31,4 +31,10 @@ public abstract class GameObject {
     public int getHeight() {
         return height;
     }
+
+    protected boolean isActive() {
+        return true;
+    }
+
+
 }

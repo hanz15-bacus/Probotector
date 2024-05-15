@@ -4,22 +4,22 @@ import java.awt.*;
 
 public class Bullet extends GameObject {
     private int speed = 10;
-    private int directionX, directionY;
+    private double directionX, directionY;
     private boolean active = true;
-    private int damage; // Add damage variable
+    private int damage;
 
-    public Bullet(int x, int y, int directionX, int directionY) {
+    public Bullet(int x, int y, int targetX, int targetY) {
         super(x, y, 10, 10);
-        this.directionX = directionX;
-        this.directionY = directionY;
-        normalizeDirection();
+        setDirection(targetX, targetY);
     }
 
-    private void normalizeDirection() {
-        double length = Math.sqrt(directionX * directionX + directionY * directionY);
+    private void setDirection(int targetX, int targetY) {
+        double dx = targetX - x;
+        double dy = targetY - y;
+        double length = Math.sqrt(dx * dx + dy * dy);
         if (length != 0) {
-            directionX = (int) (directionX / length * speed);
-            directionY = (int) (directionY / length * speed);
+            directionX = (dx / length) * speed;
+            directionY = (dy / length) * speed;
         }
     }
 
@@ -28,6 +28,9 @@ public class Bullet extends GameObject {
         if (active) {
             x += directionX;
             y += directionY;
+            if (isOffScreen()) {
+                active = false;
+            }
         }
     }
 
@@ -54,7 +57,6 @@ public class Bullet extends GameObject {
     public void setInactive() {
         active = false;
     }
-
     public int getDamage() {
         return damage;
     }
@@ -63,8 +65,4 @@ public class Bullet extends GameObject {
         this.damage = damage;
     }
 
-    public boolean isActive() {
-
-        return true;
-    }
 }

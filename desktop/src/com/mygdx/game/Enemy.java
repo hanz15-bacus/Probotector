@@ -42,4 +42,5 @@ public class Enemy extends GameObject {
     public boolean isAlive() {
         return hp > 0;
     }
+
 }
