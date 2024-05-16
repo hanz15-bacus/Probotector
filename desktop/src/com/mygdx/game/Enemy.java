@@ -1,27 +1,40 @@
 package com.mygdx.game;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class Enemy extends GameObject implements Runnable {
+    private static final int PLAYER_DAMAGE = 10; // Player damage when hit by enemy
     private int hp;
     private Game game;
-    private Thread thread;
+    private List<EnemyBullet> bullets;
+    private boolean canShoot;
 
     public Enemy(int x, int y, int hp, Game game) {
         super(x, y, 50, 50);
         this.hp = hp;
         this.game = game;
-        this.thread = new Thread(this);
+        this.bullets = new ArrayList<>();
+        this.canShoot = true;
     }
 
     @Override
     public void run() {
         while (isAlive()) {
+            if (canShoot) {
+                shoot();
+                canShoot = false;
+            }
             update();
+
             try {
-                Thread.sleep(20); // Adjust sleep time as needed
+                Thread.sleep(1000);
+                canShoot = true;
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                return;
             }
         }
     }
@@ -29,7 +42,19 @@ public class Enemy extends GameObject implements Runnable {
     @Override
     public void update() {
         if (x > 600) {
-            x -= 2; // Move left until the enemy reaches x = 600
+            x -= 2;
+        }
+
+        Iterator<EnemyBullet> it = bullets.iterator();
+        while (it.hasNext()) {
+            EnemyBullet bullet = it.next();
+            bullet.update();
+            if (!bullet.isActive()) {
+                it.remove();
+            } else if (bullet.intersects(game.getPlayer())) {
+                game.getPlayer().hit(PLAYER_DAMAGE);
+                bullet.setInactive();
+            }
         }
     }
 
@@ -39,6 +64,21 @@ public class Enemy extends GameObject implements Runnable {
             g.setColor(Color.GREEN);
             g.fillRect(x, y, width, height);
         }
+
+        for (EnemyBullet bullet : bullets) {
+            bullet.draw(g);
+        }
+    }
+
+    private void shoot() {
+        int targetX = game.getPlayer().getX() + game.getPlayer().getWidth() / 2;
+        int targetY = game.getPlayer().getY() + game.getPlayer().getHeight() / 2;
+        EnemyBullet bullet = new EnemyBullet(x + width / 2, y + height / 2, targetX, targetY);
+        bullets.add(bullet);
+    }
+
+    public List<EnemyBullet> getBullets() {
+        return bullets;
     }
 
     public int getHP() {
@@ -58,10 +98,6 @@ public class Enemy extends GameObject implements Runnable {
     }
 
     public void start() {
-        thread.start();
-    }
-
-    public void stop() {
-        thread.interrupt();
+        new Thread(this).start();
     }
 }

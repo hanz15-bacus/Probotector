@@ -5,6 +5,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -32,21 +33,21 @@ public class Game {
             int y = rand.nextInt(HEIGHT - 50);
             Enemy enemy = new Enemy(x, y, 1000, this);
             enemies.add(enemy);
-            enemy.start(); // Start the enemy thread when spawned
+            enemy.start();
         }
     }
 
     private void update() {
         player.update();
-        List<Enemy> deadEnemies = new ArrayList<>();
-        for (Enemy enemy : enemies) {
+        Iterator<Enemy> enemyIterator = enemies.iterator();
+        while (enemyIterator.hasNext()) {
+            Enemy enemy = enemyIterator.next();
             if (enemy.isAlive()) {
                 enemy.update();
             } else {
-                deadEnemies.add(enemy);
+                enemyIterator.remove();
             }
         }
-        enemies.removeAll(deadEnemies);
 
         if (enemies.isEmpty()) {
             spawnEnemies(new Random().nextInt(4) + 1);
@@ -57,7 +58,9 @@ public class Game {
 
     private void handleCollisions() {
         List<Bullet> inactiveBullets = new ArrayList<>();
+        List<EnemyBullet> inactiveEnemyBullets = new ArrayList<>();
 
+        // bullet ni player nga mo collide ni enemy
         for (Bullet bullet : player.getBullets()) {
             for (Enemy enemy : enemies) {
                 if (bullet.intersects(enemy)) {
@@ -69,20 +72,25 @@ public class Game {
         }
 
         player.getBullets().removeAll(inactiveBullets);
-
-        // Remove defeated enemies and stop their threads
-        List<Enemy> defeatedEnemies = new ArrayList<>();
+        //enemy bullet nga mo hit ni player
         for (Enemy enemy : enemies) {
-            if (!enemy.isAlive()) {
-                defeatedEnemies.add(enemy);
-                enemy.stop(); // Stop the enemy thread
+            Iterator<EnemyBullet> bulletIterator = enemy.getBullets().iterator();
+            while (bulletIterator.hasNext()) {
+                EnemyBullet bullet = bulletIterator.next();
+                if (bullet.intersects(player)) {
+                    player.hit(bullet.getDamage());
+                    bullet.setInactive();
+                    bulletIterator.remove();
+                }
             }
         }
-        enemies.removeAll(defeatedEnemies);
     }
 
     private void draw(Graphics g) {
         player.draw(g);
+            g.setColor(Color.BLACK);
+        g.drawString("Player HP: " + player.getHP(), 10, 20);
+
         for (Enemy enemy : enemies) {
             if (enemy.isAlive()) {
                 enemy.draw(g);
@@ -91,10 +99,10 @@ public class Game {
         }
     }
 
+
     private void drawEnemyHP(Graphics g, Enemy enemy) {
         g.setColor(Color.BLACK);
         g.drawString("Enemy HP: " + enemy.getHP(), enemy.getX(), enemy.getY() - 10);
-        System.out.println("HP: " + enemy.getHP());
     }
 
     public Player getPlayer() {
@@ -159,7 +167,7 @@ public class Game {
             frames++;
             if (System.currentTimeMillis() - timer > 1000) {
                 timer += 1000;
-                System.out.println("FPS: " + frames);
+                //System.out.println("FPS: " + frames);
                 frames = 0;
             }
         }
