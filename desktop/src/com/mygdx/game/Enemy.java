@@ -2,14 +2,28 @@ package com.mygdx.game;
 
 import java.awt.*;
 
-public class Enemy extends GameObject {
+public class Enemy extends GameObject implements Runnable {
     private int hp;
     private Game game;
+    private Thread thread;
 
     public Enemy(int x, int y, int hp, Game game) {
         super(x, y, 50, 50);
         this.hp = hp;
         this.game = game;
+        this.thread = new Thread(this);
+    }
+
+    @Override
+    public void run() {
+        while (isAlive()) {
+            update();
+            try {
+                Thread.sleep(20); // Adjust sleep time as needed
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -43,4 +57,11 @@ public class Enemy extends GameObject {
         return hp > 0;
     }
 
+    public void start() {
+        thread.start();
+    }
+
+    public void stop() {
+        thread.interrupt();
+    }
 }

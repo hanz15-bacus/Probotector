@@ -32,6 +32,7 @@ public class Game {
             int y = rand.nextInt(HEIGHT - 50);
             Enemy enemy = new Enemy(x, y, 1000, this);
             enemies.add(enemy);
+            enemy.start(); // Start the enemy thread when spawned
         }
     }
 
@@ -68,6 +69,16 @@ public class Game {
         }
 
         player.getBullets().removeAll(inactiveBullets);
+
+        // Remove defeated enemies and stop their threads
+        List<Enemy> defeatedEnemies = new ArrayList<>();
+        for (Enemy enemy : enemies) {
+            if (!enemy.isAlive()) {
+                defeatedEnemies.add(enemy);
+                enemy.stop(); // Stop the enemy thread
+            }
+        }
+        enemies.removeAll(defeatedEnemies);
     }
 
     private void draw(Graphics g) {
@@ -82,9 +93,8 @@ public class Game {
 
     private void drawEnemyHP(Graphics g, Enemy enemy) {
         g.setColor(Color.BLACK);
-
         g.drawString("Enemy HP: " + enemy.getHP(), enemy.getX(), enemy.getY() - 10);
-        System.out.println("HP: %d" +enemy.getHP());
+        System.out.println("HP: " + enemy.getHP());
     }
 
     public Player getPlayer() {
@@ -118,7 +128,7 @@ public class Game {
                     mousePressed = true;
                     mouseX = e.getX();
                     mouseY = e.getY();
-                    player.attack(mouseX, mouseY); // Fire a bullet when mouse is pressed
+                    player.attack(mouseX, mouseY);
                 }
             }
 

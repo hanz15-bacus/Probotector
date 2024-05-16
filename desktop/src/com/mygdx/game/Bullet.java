@@ -36,7 +36,7 @@ public class Bullet extends GameObject {
 
     public void draw(Graphics g) {
         if (active) {
-            g.setColor(Color.YELLOW);
+            g.setColor(Color.BLACK);
             g.fillRect(x, y, width, height);
         }
     }
@@ -49,9 +49,9 @@ public class Bullet extends GameObject {
         return active;
     }
 
-    public boolean intersects(GameObject other) {
+    public boolean intersects(Enemy enemy) {
         Rectangle bulletRect = new Rectangle(x, y, width, height);
-        Rectangle otherRect = new Rectangle(other.getX(), other.getY(), other.getWidth(), other.getHeight());
-        return bulletRect.intersects(otherRect);
+        Rectangle enemyRect = new Rectangle(enemy.getX(), enemy.getY(), enemy.getWidth(), enemy.getHeight());
+        return bulletRect.intersects(enemyRect);
     }
 }
