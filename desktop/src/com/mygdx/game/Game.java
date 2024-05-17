@@ -70,7 +70,6 @@ public class Game {
                 }
             }
         }
-
         player.getBullets().removeAll(inactiveBullets);
         //enemy bullet nga mo hit ni player
         for (Enemy enemy : enemies) {
