@@ -14,6 +14,9 @@ public abstract class GameObject {
     }
 
     public abstract void update();
+
+    public abstract void draw(Object GameAssets);
+
     public abstract void draw(Graphics g);
 
     public int getX() {

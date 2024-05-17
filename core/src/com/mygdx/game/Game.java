@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-public class Game {
+public class Game implements KeyListener {
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
     private Player player;
@@ -87,7 +87,7 @@ public class Game {
 
     private void draw(Graphics g) {
         player.draw(g);
-            g.setColor(Color.BLACK);
+        g.setColor(Color.BLACK);
         g.drawString("Player HP: " + player.getHP(), 10, 20);
 
         for (Enemy enemy : enemies) {
@@ -97,7 +97,6 @@ public class Game {
             }
         }
     }
-
 
     private void drawEnemyHP(Graphics g, Enemy enemy) {
         g.setColor(Color.BLACK);
@@ -145,6 +144,7 @@ public class Game {
             }
         });
 
+        canvas.addKeyListener(this);
         canvas.setFocusable(true);
         canvas.requestFocus();
 
@@ -166,7 +166,6 @@ public class Game {
             frames++;
             if (System.currentTimeMillis() - timer > 1000) {
                 timer += 1000;
-                //System.out.println("FPS: " + frames);
                 frames = 0;
             }
         }
@@ -175,5 +174,41 @@ public class Game {
     public static void main(String[] args) {
         Game game = new Game();
         game.start();
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_W:
+                player.setMoveY(-Player.MOVE_SPEED);
+                break;
+            case KeyEvent.VK_S:
+                player.setMoveY(Player.MOVE_SPEED);
+                break;
+            case KeyEvent.VK_A:
+                player.setMoveX(-Player.MOVE_SPEED);
+                break;
+            case KeyEvent.VK_D:
+                player.setMoveX(Player.MOVE_SPEED);
+                break;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode()) {
+            case KeyEvent.VK_W:
+            case KeyEvent.VK_S:
+                player.setMoveY(0);
+                break;
+            case KeyEvent.VK_A:
+            case KeyEvent.VK_D:
+                player.setMoveX(0);
+                break;
+        }
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
     }
 }

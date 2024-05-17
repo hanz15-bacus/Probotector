@@ -34,6 +34,11 @@ public class Bullet extends GameObject {
         }
     }
 
+    @Override
+    public void draw(Object GameAssets) {
+
+    }
+
     public void draw(Graphics g) {
         if (active) {
             g.setColor(Color.BLACK);

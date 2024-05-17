@@ -59,6 +59,11 @@ public class Enemy extends GameObject implements Runnable {
     }
 
     @Override
+    public void draw(Object GameAssets) {
+
+    }
+
+    @Override
     public void draw(Graphics g) {
         if (isAlive()) {
             g.setColor(Color.GREEN);
