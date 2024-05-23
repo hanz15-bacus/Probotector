@@ -1,6 +1,9 @@
 package com.mygdx.game;
 
-import java.awt.*;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -8,16 +11,18 @@ import java.util.List;
 public class Enemy extends GameObject implements Runnable {
     private static final int PLAYER_DAMAGE = 10; // Player damage when hit by enemy
     private int hp;
-    private Game game;
+    private Player player;
     private List<EnemyBullet> bullets;
     private boolean canShoot;
+    private Texture enemyTexture;
 
-    public Enemy(int x, int y, int hp, Game game) {
+    public Enemy(int x, int y, int hp) {
         super(x, y, 50, 50);
         this.hp = hp;
-        this.game = game;
+        this.player = player;
         this.bullets = new ArrayList<>();
         this.canShoot = true;
+        this.enemyTexture = new Texture("enemy.png");
     }
 
     @Override
@@ -51,8 +56,8 @@ public class Enemy extends GameObject implements Runnable {
             bullet.update();
             if (!bullet.isActive()) {
                 it.remove();
-            } else if (bullet.intersects(game.getPlayer())) {
-                game.getPlayer().hit(PLAYER_DAMAGE);
+            } else if (bullet.intersects(player)) {
+                player.hit(PLAYER_DAMAGE);
                 bullet.setInactive();
             }
         }
@@ -60,27 +65,37 @@ public class Enemy extends GameObject implements Runnable {
 
     @Override
     public void draw(Object GameAssets) {
-
+        // Implement if necessary
     }
 
     @Override
-    public void draw(Graphics g) {
+    public void draw(SpriteBatch batch) {
         if (isAlive()) {
-            g.setColor(Color.GREEN);
-            g.fillRect(x, y, width, height);
+            batch.setColor(Color.GREEN);
+            batch.draw(enemyTexture, x, y, width, height);
         }
 
         for (EnemyBullet bullet : bullets) {
-            bullet.draw(g);
+            bullet.draw(batch);
+        }
+    }
+
+    @Override
+    public void dispose() {
+        enemyTexture.dispose();
+        for (EnemyBullet bullet : bullets) {
+            bullet.dispose();
         }
     }
 
     private void shoot() {
-        int targetX = game.getPlayer().getX() + game.getPlayer().getWidth() / 2;
-        int targetY = game.getPlayer().getY() + game.getPlayer().getHeight() / 2;
+        int targetX = player.getX();
+        int targetY = player.getY();
         EnemyBullet bullet = new EnemyBullet(x + width / 2, y + height / 2, targetX, targetY);
+        bullet.setDamage(50);
         bullets.add(bullet);
     }
+
 
     public List<EnemyBullet> getBullets() {
         return bullets;

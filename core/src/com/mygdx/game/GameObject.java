@@ -1,6 +1,6 @@
 package com.mygdx.game;
 
-import java.awt.Graphics;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public abstract class GameObject {
     protected int x, y;
@@ -15,9 +15,7 @@ public abstract class GameObject {
 
     public abstract void update();
 
-    public abstract void draw(Object GameAssets);
-
-    public abstract void draw(Graphics g);
+    public abstract void draw(SpriteBatch batch);
 
     public int getX() {
         return x;
@@ -35,9 +33,17 @@ public abstract class GameObject {
         return height;
     }
 
+    public abstract void draw(Object GameAssets);
+
     protected boolean isActive() {
         return true;
     }
 
+    public abstract void dispose();
 
+    public void setWidth(int i) {
+    }
+
+    public void setHeight(int i) {
+    }
 }
