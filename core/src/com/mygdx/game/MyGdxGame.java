@@ -2,24 +2,27 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.maps.tiled.TiledMap;
+import com.badlogic.gdx.maps.tiled.TmxMapLoader;
+import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-
-import static com.badlogic.gdx.graphics.g3d.particles.ParticleChannels.Color;
 
 public class MyGdxGame extends ApplicationAdapter {
     SpriteBatch batch;
@@ -29,18 +32,23 @@ public class MyGdxGame extends ApplicationAdapter {
     BitmapFont font;
     TextButton.TextButtonStyle buttonStyle;
     private int score = 0;
+    private int mapWidth, mapHeight;
     public static final int WIDTH = 800;
     public static final int HEIGHT = 600;
     private Player player;
     private List<Enemy> enemies = new ArrayList<>();
     private boolean gameStarted = false;
     private boolean loading = true;
+    private TiledMap map;
+    private OrthogonalTiledMapRenderer mapRenderer;
+    private OrthographicCamera camera;
+    private FitViewport viewport;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         img = new Texture("WHITE.jpg");
-        loadingImg = new Texture("contra-loading.jpg");
+        loadingImg = new Texture("tank-loading.png");
 
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
@@ -69,6 +77,16 @@ public class MyGdxGame extends ApplicationAdapter {
 
         player = new Player(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2);
         spawnEnemies(3);
+
+        // Load the map
+        map = new TmxMapLoader().load("mapper/my-realmap.tmx");
+        mapRenderer = new OrthogonalTiledMapRenderer(map);
+        mapWidth = map.getProperties().get("width", Integer.class) * map.getProperties().get("tilewidth", Integer.class);
+        mapHeight = map.getProperties().get("height", Integer.class) * map.getProperties().get("tileheight", Integer.class);
+        camera = new OrthographicCamera();
+        viewport = new FitViewport(WIDTH, HEIGHT, camera);
+        camera.setToOrtho(false, WIDTH, HEIGHT);
+        camera.update();
     }
 
     @Override
@@ -84,6 +102,10 @@ public class MyGdxGame extends ApplicationAdapter {
             batch.end();
         } else {
             update();
+            camera.update();
+            mapRenderer.setView(camera);
+            mapRenderer.render();
+
             batch.begin();
             draw();
             batch.end();
@@ -106,6 +128,15 @@ public class MyGdxGame extends ApplicationAdapter {
         loadingImg.dispose();
         stage.dispose();
         font.dispose();
+        map.dispose();
+        mapRenderer.dispose();
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height);
+        camera.setToOrtho(false, width, height);
+        mapRenderer.setView(camera);
     }
 
     private void spawnEnemies(int count) {
@@ -113,13 +144,17 @@ public class MyGdxGame extends ApplicationAdapter {
         for (int i = 0; i < count; i++) {
             int x = WIDTH;
             int y = rand.nextInt(HEIGHT - 50);
-            Enemy enemy = new Enemy(x, y, 1000);
+            Enemy enemy = new Enemy(x, y, 1000, player);
+            enemy.start();
             enemies.add(enemy);
         }
     }
 
     private void update() {
         player.update();
+        updateCameraPosition();
+        camera.update();
+
         Iterator<Enemy> enemyIterator = enemies.iterator();
         while (enemyIterator.hasNext()) {
             Enemy enemy = enemyIterator.next();
@@ -135,6 +170,20 @@ public class MyGdxGame extends ApplicationAdapter {
         }
 
         handleCollisions();
+    }
+
+    private void updateCameraPosition() {
+        camera.position.set(player.getX(), player.getY(), 0);
+
+        // Ensure the camera doesn't go out of bounds
+        float halfViewportWidth = camera.viewportWidth * 0.5f;
+        float halfViewportHeight = camera.viewportHeight * 0.5f;
+
+        camera.position.x = Math.max(halfViewportWidth, camera.position.x);
+        camera.position.x = Math.min(mapWidth - halfViewportWidth, camera.position.x);
+
+        camera.position.y = Math.max(halfViewportHeight, camera.position.y);
+        camera.position.y = Math.min(mapHeight - halfViewportHeight, camera.position.y);
     }
 
     private void handleCollisions() {
@@ -154,12 +203,11 @@ public class MyGdxGame extends ApplicationAdapter {
         player.getBullets().removeAll(inactiveBullets);
     }
 
-
     private void draw() {
         player.draw(batch);
         font.draw(batch, "Player HP: " + player.getHP(), 10, 20);
-        font.draw(batch, "Score: " + player.getScore(), 10, 40); // Display the player's score
-        font.draw(batch, "Score: " + score, 10, 40);
+        font.draw(batch, "Score: " + player.getScore(), 10, 40);
+        font.draw(batch, "Score: " + score, 10, 60);
         for (Enemy enemy : enemies) {
             if (enemy.isAlive()) {
                 enemy.draw(batch);

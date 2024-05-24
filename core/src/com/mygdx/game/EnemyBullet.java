@@ -1,14 +1,13 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 
 public class EnemyBullet {
     private static final int SPEED = 5;
-    private static final int DAMAGE = 10;
+    private static final int DAMAGE = 50;
     private int x, y;
     private double vx, vy;
     private boolean activeBullet;
@@ -22,7 +21,11 @@ public class EnemyBullet {
         this.width = 5;  // Example width
         this.height = 5; // Example height
         this.activeBullet = true;
-        this.bulletTexture = new Texture("bullet.png"); // Ensure this texture exists in the assets folder
+        this.bulletTexture = null; // Initialize as null
+        // Create texture on the rendering thread
+        Gdx.app.postRunnable(() -> {
+            bulletTexture = new Texture("bullet.png");
+        });
         calculateVelocity(targetX, targetY);
     }
 
@@ -57,10 +60,8 @@ public class EnemyBullet {
     }
 
     public void draw(SpriteBatch batch) {
-        if (activeBullet) {
-            batch.begin();
+        if (activeBullet && bulletTexture != null) {
             batch.draw(bulletTexture, x, y, width, height);
-            batch.end();
         }
     }
 
@@ -71,9 +72,12 @@ public class EnemyBullet {
     }
 
     public void dispose() {
-        bulletTexture.dispose();
+        if (bulletTexture != null) {
+            bulletTexture.dispose();
+        }
     }
 
-    public void setDamage(int i) {
+    public void setDamage(int damage) {
+        // Implementation of setDamage method
     }
 }

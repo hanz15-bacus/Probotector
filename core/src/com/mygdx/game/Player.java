@@ -37,7 +37,7 @@ public class Player extends GameObject {
         super(x, y, 32, 32); // Set the width and height to be larger
         this.bullets = new ArrayList<>();
         this.hp = PLAYER_HP;
-        this.playerTexture = new Texture(Gdx.files.internal("player/Player.png"));
+        this.playerTexture = new Texture(Gdx.files.internal("player/player.jpg"));
         this.score = 0;
         this.stateTime = 0f;
         initializeAnimations();

@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -9,20 +10,21 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Enemy extends GameObject implements Runnable {
-    private static final int PLAYER_DAMAGE = 10; // Player damage when hit by enemy
+    private static final int PLAYER_DAMAGE = 50; // Player damage when hit by enemy
+    private static final float MOVEMENT_SPEED = 1.0f; // Movement speed of the enemy
     private int hp;
     private Player player;
     private List<EnemyBullet> bullets;
     private boolean canShoot;
     private Texture enemyTexture;
 
-    public Enemy(int x, int y, int hp) {
+    public Enemy(int x, int y, int hp, Player player) {
         super(x, y, 50, 50);
         this.hp = hp;
         this.player = player;
         this.bullets = new ArrayList<>();
         this.canShoot = true;
-        this.enemyTexture = new Texture("enemy.png");
+        this.enemyTexture = new Texture("player/player.jpg");
     }
 
     @Override
@@ -46,10 +48,23 @@ public class Enemy extends GameObject implements Runnable {
 
     @Override
     public void update() {
-        if (x > 600) {
-            x -= 2;
+        // Move towards the player slowly
+        if (x < player.getX()) {
+            x += MOVEMENT_SPEED;
+        } else if (x > player.getX()) {
+            x -= MOVEMENT_SPEED;
+        }
+        if (y < player.getY()) {
+            y += MOVEMENT_SPEED;
+        } else if (y > player.getY()) {
+            y -= MOVEMENT_SPEED;
         }
 
+        // Ensure the enemy stays within the game boundaries
+        x = Math.max(0, Math.min(x, Gdx.graphics.getWidth() - width));
+        y = Math.max(0, Math.min(y, Gdx.graphics.getHeight() - height));
+
+        // Update bullets
         Iterator<EnemyBullet> it = bullets.iterator();
         while (it.hasNext()) {
             EnemyBullet bullet = it.next();
@@ -61,11 +76,6 @@ public class Enemy extends GameObject implements Runnable {
                 bullet.setInactive();
             }
         }
-    }
-
-    @Override
-    public void draw(Object GameAssets) {
-        // Implement if necessary
     }
 
     @Override
@@ -81,6 +91,11 @@ public class Enemy extends GameObject implements Runnable {
     }
 
     @Override
+    public void draw(Object GameAssets) {
+
+    }
+
+    @Override
     public void dispose() {
         enemyTexture.dispose();
         for (EnemyBullet bullet : bullets) {
@@ -92,10 +107,9 @@ public class Enemy extends GameObject implements Runnable {
         int targetX = player.getX();
         int targetY = player.getY();
         EnemyBullet bullet = new EnemyBullet(x + width / 2, y + height / 2, targetX, targetY);
-        bullet.setDamage(50);
-        bullets.add(bullet);
+        bullet.setDamage(100); // Set bullet damage to 100
+        Gdx.app.postRunnable(() -> bullets.add(bullet)); // Ensure bullet is added to the list on the rendering thread
     }
-
 
     public List<EnemyBullet> getBullets() {
         return bullets;
